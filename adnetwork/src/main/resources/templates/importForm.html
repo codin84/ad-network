@@ -1,0 +1,37 @@
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>AdNetwork demo</title>
+
+    <h1>Collect network daily data</h1>
+</head>
+
+<body>
+<form th:action="@{/importReport}" method="post" enctype="multipart/form-data">
+    <div th:object="${adNetworkSource}">
+        <label for="adNetworkSource">Select network</label>
+        <select class="form-control" id="adNetworkSource" name="adNetwork">
+            <option th:each="adNetworkSource : ${adNetworkSources}"
+                    th:value="${adNetworkSource}"
+                    th:text="${adNetworkSource}"></option>
+        </select>
+    </div>
+    <div>
+        Date <input type="date" name="date"/>
+    </div>
+    <div>
+        <input type="submit" value="Collect" name="button"/>
+    </div>
+</form>
+
+<div th:if="${message}">
+    <h2 th:text="${message}"/>
+</div>
+
+</body>
+
+<footer>
+    <p><a href="http://localhost:8461/h2-console">H2Database</a> link to H2 in-memory database console (use JDBC url:=
+        jdbc:h2:mem:ad-network).</p>
+</footer>
+</html>
