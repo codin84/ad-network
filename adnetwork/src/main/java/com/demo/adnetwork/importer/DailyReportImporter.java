@@ -14,40 +14,34 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import java.time.LocalDate;
+import java.util.stream.Collectors;
 
 @Component
-public class DailyReportImporter {
+public class DailyReportImporter
+{
 
-    @Autowired
-    private CsvReader csvReader;
+  @Autowired
+  private CsvReader csvReader;
 
-    @Autowired
-    private ReportService reportService;
+  @Autowired
+  private ReportService reportService;
 
-    public void importReport(@Nonnull final String adNetworkSourceName, @Nonnull final LocalDate reportDate) {
-        StringUtils.checkNotBlank(adNetworkSourceName, "AdNetworkSourceName must not be blank.");
-        Preconditions.checkNotNull(reportDate, "Date must not be null.");
+  @SuppressWarnings("ResultOfMethodCallIgnored")
+  public void importReport(@Nonnull final String adNetworkSourceName, @Nonnull final LocalDate reportDate)
+  {
+    StringUtils.checkNotBlank(adNetworkSourceName, "AdNetworkSourceName must not be blank.");
+    Preconditions.checkNotNull(reportDate, "Date must not be null.");
 
-        final AdNetworkSource adNetworkSource = reportService.findAdNetworkSource(adNetworkSourceName);
-
-        final String reportUrl = ReportUrlBuilder.build(adNetworkSource, reportDate);
-        if (reportService.isReportAlreadyImported(adNetworkSource, reportDate)) {
-            throw new ReportAlreadyImportedException(adNetworkSource.getName(), reportDate);
-        }
-
-        csvReader.parse(reportUrl).stream()
-                .map(rowData -> new DailyReport(rowData.getDate(),
-                        rowData.getApp(),
-                        rowData.getPlatform(),
-                        rowData.getRequests(),
-                        rowData.getImpressions(),
-                        rowData.getRevenue(),
-                        rowData.getCurrency()))
-                .forEach(dailyreport ->
-                {
-                    reportService.saveDailyReport(dailyreport);
-                });
-
-        reportService.saveDailyReportImportLog(new DailyReportImportLog(reportUrl, adNetworkSource, reportDate, LocalDate.now()));
+    final AdNetworkSource adNetworkSource = reportService.findAdNetworkSource(adNetworkSourceName);
+    final String reportUrl = ReportUrlBuilder.build(adNetworkSource, reportDate);
+    if (reportService.isReportAlreadyImported(adNetworkSource, reportDate))
+    {
+      throw new ReportAlreadyImportedException(adNetworkSource.getName(), reportDate);
     }
+
+    final DailyReportImportLog dailyReportImportLog = new DailyReportImportLog(reportUrl, adNetworkSource, reportDate, LocalDate.now());
+    csvReader.parse(reportUrl).stream().map(rowData -> new DailyReport(rowData.getDate(), rowData.getApp(), rowData.getPlatform(), rowData.getRequests(), rowData.getImpressions(), rowData.getRevenue(), rowData.getCurrency(), dailyReportImportLog)).collect(Collectors.toList());
+
+    reportService.saveDailyReportImportLog(dailyReportImportLog);
+  }
 }

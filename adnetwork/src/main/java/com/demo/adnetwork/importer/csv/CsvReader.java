@@ -11,18 +11,22 @@ import java.net.URL;
 import java.util.List;
 
 @Component
-public class CsvReader {
+public class CsvReader
+{
 
-    @Autowired
-    private CsvParser csvParser;
+  @Autowired
+  private CsvParser csvParser;
 
-    public List<DailyReportData> parse(@Nonnull String csvUrl) {
-        Assert.hasText(csvUrl, "CsvUrl must not be null!");
+  public List<DailyReportData> parse(@Nonnull String csvUrl)
+  {
+    Assert.hasText(csvUrl, "CsvUrl must not be null!");
 
-        try {
-            return csvParser.parseCsvInputStream(new URL(csvUrl));
-        } catch (IOException exception) {
-            throw new UrlResourceIoException(csvUrl, exception);
-        }
+    try
+    {
+      return csvParser.parseCsvInputStream(new URL(csvUrl));
+    } catch (IOException exception)
+    {
+      throw new UrlResourceIoException(csvUrl, exception);
     }
+  }
 }

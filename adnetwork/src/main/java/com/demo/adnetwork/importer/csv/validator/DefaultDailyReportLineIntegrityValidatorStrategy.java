@@ -8,9 +8,18 @@ import javax.annotation.Nonnull;
 import java.util.Arrays;
 
 @Component
-public class DefaultDailyReportRowValidatorStrategy implements DailyReportRowValidatorStrategy {
+public class DefaultDailyReportLineIntegrityValidatorStrategy implements DailyReportLineIntegrityValidatorStrategy
+{
 
-    public boolean isRowValid(@Nonnull final String[] values) {
+    /**
+     * This is the most basic form of String data validation. Simple strategy to validate if a line in report is valid.
+     * It checks if all elements in values array are non empty.
+     *
+     * @param values
+     * @return true is all elements of array are not blank
+     */
+    public boolean isValid(@Nonnull final String[] values)
+    {
         Preconditions.checkNotNull(values, "Values should not be null!");
 
         // if any column value is an empty string, row is not valid

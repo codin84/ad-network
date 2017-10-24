@@ -2,6 +2,7 @@ package com.demo.adnetwork.controller;
 
 import com.demo.adnetwork.entity.AdNetworkSource;
 import com.demo.adnetwork.importer.DailyReportImporter;
+import com.demo.adnetwork.importer.exception.MalformedReportException;
 import com.demo.adnetwork.importer.exception.ReportAlreadyImportedException;
 import com.demo.adnetwork.importer.exception.UrlResourceIoException;
 import com.demo.adnetwork.service.ReportService;
@@ -21,7 +22,8 @@ import java.time.LocalDate;
 import java.util.stream.Collectors;
 
 @Controller
-public class AdNetworkReportController {
+public class AdNetworkReportController
+{
 
     @Autowired
     private ReportService reportService;
@@ -30,41 +32,42 @@ public class AdNetworkReportController {
     private DailyReportImporter dailyReportImporter;
 
     @RequestMapping(value = "/importReport", method = RequestMethod.POST)
-    public String importReport(@RequestParam String adNetwork,
-                               @RequestParam(name = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-                               RedirectAttributes redirectAttributes) {
+    public String importReport(@RequestParam final String adNetwork, @RequestParam(name = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate date, final RedirectAttributes redirectAttributes)
+    {
         dailyReportImporter.importReport(adNetwork, date);
 
-        redirectAttributes.addFlashAttribute("message",
-                "Success!");
+        redirectAttributes.addFlashAttribute("message", "Success!");
 
         return "redirect:/";
     }
 
     @GetMapping("/")
-    public String listAdNetworkOptions(@Nonnull final Model model) throws IOException {
+    public String listAdNetworkOptions(@Nonnull final Model model) throws IOException
+    {
 
         Preconditions.checkNotNull(model, "Model must not be null!");
 
-        model.addAttribute("adNetworkSources",
-                reportService.findAdNetworkSources().stream()
-                        .map(AdNetworkSource::getName)
-                        .sorted()
-                        .collect(Collectors.toList()));
+        model.addAttribute("adNetworkSources", reportService.findAdNetworkSources().stream().map(AdNetworkSource::getName).sorted().collect(Collectors.toList()));
         model.addAttribute("reportDate", LocalDate.now());
 
         return "importForm";
     }
 
     @ExceptionHandler(ReportAlreadyImportedException.class)
-    public ResponseEntity<?> handleReportAlreadyImportedException(ReportAlreadyImportedException exc) {
-        return new ResponseEntity<Object>("Report for: {" + exc.getAdNetwork() + ", " + exc.getDate() + "} is already imported!",
-                HttpStatus.SEE_OTHER);
+    public ResponseEntity<?> handleReportAlreadyImportedException(ReportAlreadyImportedException exc)
+    {
+        return new ResponseEntity<Object>("Report for: {" + exc.getAdNetwork() + ", " + exc.getDate() + "} is already imported!", HttpStatus.SEE_OTHER);
     }
 
     @ExceptionHandler(UrlResourceIoException.class)
-    public ResponseEntity<?> handleUrlIoException(UrlResourceIoException exc) {
-        return new ResponseEntity<Object>("Report not found at: " + exc.getUrl() + "!",
-                HttpStatus.NOT_FOUND);
+    public ResponseEntity<?> handleUrlIoException(UrlResourceIoException exc)
+    {
+        return new ResponseEntity<Object>("Report not found at: " + exc.getUrl() + "!", HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MalformedReportException.class)
+    public ResponseEntity<?> handleMalformedReportException(MalformedReportException exc)
+    {
+        return new ResponseEntity<Object>("Report is malformed! Message: " + exc.getMessage() + "!", HttpStatus.SEE_OTHER);
     }
 }

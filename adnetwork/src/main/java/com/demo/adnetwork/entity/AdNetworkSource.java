@@ -4,7 +4,8 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "ad_network_source")
-public class AdNetworkSource {
+public class AdNetworkSource
+{
     @Id
     @GeneratedValue
     private Long id;
@@ -18,29 +19,35 @@ public class AdNetworkSource {
     @Column(nullable = false)
     private String dateParamFormat;
 
-    public AdNetworkSource() {
+    public AdNetworkSource()
+    {
     }
 
-    public AdNetworkSource(Long id, String name, String url, String dateParamFormat) {
+    public AdNetworkSource(Long id, String name, String url, String dateParamFormat)
+    {
         this.id = id;
         this.name = name;
         this.url = url;
         this.dateParamFormat = dateParamFormat;
     }
 
-    public Long getId() {
+    public Long getId()
+    {
         return id;
     }
 
-    public String getName() {
+    public String getName()
+    {
         return name;
     }
 
-    public String getUrl() {
+    public String getUrl()
+    {
         return url;
     }
 
-    public String getDateParamFormat() {
+    public String getDateParamFormat()
+    {
         return dateParamFormat;
     }
 }

@@ -6,26 +6,25 @@ import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Objects;
 
-public enum Currency {
-    USD("$"),
-    GBP("£"),
-    EUR("€");
+public enum Currency
+{
+    USD("$"), GBP("£"), EUR("€");
 
     final String symbol;
 
-    Currency(@Nonnull final String symbol) {
+    Currency(@Nonnull final String symbol)
+    {
         this.symbol = StringUtils.checkNotBlank(symbol, "Symbol must not be blank!");
     }
 
-    public String getSymbol() {
+    public String getSymbol()
+    {
         return symbol;
     }
 
-    public static Currency valueOfSymbol(@Nonnull final String symbol) {
+    public static Currency valueOfSymbol(@Nonnull final String symbol)
+    {
         StringUtils.checkNotBlank(symbol, "Symbol must not be empty!");
-        return Arrays.stream(values())
-                .filter(currency -> Objects.equals(symbol, currency.getSymbol()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Currency not defined for symbol (" + symbol + ")"));
+        return Arrays.stream(values()).filter(currency -> Objects.equals(symbol, currency.getSymbol())).findFirst().orElseThrow(() -> new IllegalArgumentException("Currency not defined for symbol (" + symbol + ")"));
     }
 }

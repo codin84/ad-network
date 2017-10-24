@@ -9,6 +9,8 @@ import java.time.LocalDate;
 import java.util.stream.Stream;
 
 @Component
-public interface ReportImportLogRepository extends JpaRepository<DailyReportImportLog, Long> {
-    Stream<DailyReportImportLog> findByAdNetworkSourceAndReportDate(AdNetworkSource adNetworkSource, LocalDate reportDate);
+public interface ReportImportLogRepository extends JpaRepository<DailyReportImportLog, Long>
+{
+
+  Stream<DailyReportImportLog> findByAdNetworkSourceAndReportDate(AdNetworkSource adNetworkSource, LocalDate reportDate);
 }

@@ -11,17 +11,21 @@ import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
 @SpringBootApplication(scanBasePackages = {"com.demo.adnetwork"})
 @EnableJpaRepositories("com.demo.adnetwork")
 @EntityScan(basePackages = {"com.demo.adnetwork"})
-public class AdNetworkApplication implements CommandLineRunner {
-    public static void main(String[] args) throws Exception {
+public class AdNetworkApplication implements CommandLineRunner
+{
+    public static void main(String[] args) throws Exception
+    {
         SpringApplication.run(AdNetworkApplication.class, args);
     }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) throws Exception
+    {
     }
 
     @Bean
-    public Java8TimeDialect java8TimeDialect() {
+    public Java8TimeDialect java8TimeDialect()
+    {
         return new Java8TimeDialect();
     }
 }

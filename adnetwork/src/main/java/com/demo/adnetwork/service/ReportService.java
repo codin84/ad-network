@@ -19,53 +19,51 @@ import java.util.List;
 import java.util.stream.Stream;
 
 @Component
-public class ReportService {
-    @Autowired
-    private DailyReportRepository dailyReportRepository;
+public class ReportService
+{
+  @Autowired
+  private DailyReportRepository dailyReportRepository;
 
-    @Autowired
-    private ReportImportLogRepository dailyReportImportLogRepository;
+  @Autowired
+  private ReportImportLogRepository dailyReportImportLogRepository;
 
-    @Autowired
-    private AdNetworkSourceRepository adNetworkSourceRepository;
+  @Autowired
+  private AdNetworkSourceRepository adNetworkSourceRepository;
 
-    @Transactional
-    public AdNetworkSource findAdNetworkSource(@Nonnull final String name) {
-        return adNetworkSourceRepository.findByName(StringUtils.checkNotBlank(name, "Name must not be blank!"));
-    }
+  @Transactional
+  public AdNetworkSource findAdNetworkSource(@Nonnull final String name)
+  {
+    return adNetworkSourceRepository.findByName(StringUtils.checkNotBlank(name, "Name must not be blank!"));
+  }
 
-    @Transactional
-    public List<AdNetworkSource> findAdNetworkSources() {
-        return adNetworkSourceRepository.findAll();
-    }
+  @Transactional
+  public List<AdNetworkSource> findAdNetworkSources()
+  {
+    return adNetworkSourceRepository.findAll();
+  }
 
-    @Transactional
-    public void saveDailyReport(@Nonnull final DailyReport dailyReport) {
-        Assert.notNull(dailyReport, "DailyReport must not be null!");
+  @Transactional
+  public Stream<DailyReport> findDailyReportsByApp(@Nonnull final String app)
+  {
+    Assert.notNull(app, "App must not be null!");
 
-        dailyReportRepository.save(dailyReport);
-    }
+    return dailyReportRepository.findByApp(app);
+  }
 
-    @Transactional
-    public Stream<DailyReport> findDailyReportsByApp(@Nonnull final String app) {
-        Assert.notNull(app, "App must not be null!");
+  @Transactional
+  public void saveDailyReportImportLog(@Nonnull final DailyReportImportLog dailyReportImportLog)
+  {
+    Assert.notNull(dailyReportImportLog, "DailyReportImportLog must not be null!");
 
-        return dailyReportRepository.findByApp(app);
-    }
+    dailyReportImportLogRepository.save(dailyReportImportLog);
+  }
 
-    @Transactional
-    public void saveDailyReportImportLog(@Nonnull final DailyReportImportLog dailyReportImportLog) {
-        Assert.notNull(dailyReportImportLog, "DailyReportImportLog must not be null!");
+  @Transactional
+  public boolean isReportAlreadyImported(@Nonnull final AdNetworkSource adNetworkSource, @Nonnull final LocalDate date)
+  {
+    Preconditions.checkNotNull(adNetworkSource, "AdNetworkSource must not be null!");
+    Preconditions.checkNotNull(date, "Date must not be null!");
 
-        dailyReportImportLogRepository.save(dailyReportImportLog);
-    }
-
-    @Transactional
-    public boolean isReportAlreadyImported(@Nonnull final AdNetworkSource adNetworkSource, @Nonnull final LocalDate date) {
-        Preconditions.checkNotNull(adNetworkSource, "AdNetworkSource must not be null!");
-        Preconditions.checkNotNull(date, "Date must not be null!");
-
-        return dailyReportImportLogRepository.findByAdNetworkSourceAndReportDate(adNetworkSource, date).count() != 0;
-    }
-
+    return dailyReportImportLogRepository.findByAdNetworkSourceAndReportDate(adNetworkSource, date).count() != 0;
+  }
 }

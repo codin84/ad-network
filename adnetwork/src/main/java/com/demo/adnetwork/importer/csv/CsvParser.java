@@ -1,6 +1,7 @@
 package com.demo.adnetwork.importer.csv;
 
-import com.demo.adnetwork.importer.csv.validator.DailyReportRowValidatorStrategy;
+import com.demo.adnetwork.importer.csv.validator.DailyReportLineIntegrityValidatorStrategy;
+import com.demo.adnetwork.importer.exception.MalformedReportException;
 import com.demo.adnetwork.util.RevenueValueParser;
 import com.google.common.base.Preconditions;
 import org.apache.logging.log4j.LogManager;
@@ -24,68 +25,78 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Component
-public class CsvParser {
+public class CsvParser
+{
     private static final org.apache.logging.log4j.Logger LOG = LogManager.getLogger(CsvParser.class);
 
     @Autowired
-    private DailyReportRowValidatorStrategy dailyReportRowValidatorStrategy;
+    private DailyReportLineIntegrityValidatorStrategy dailyReportLineIntegrityValidatorStrategy;
 
     private final String COLUMN_SEPARATOR = ",";
 
-    public List<DailyReportData> parseCsvInputStream(@Nonnull final URL csvFileUrl) throws IOException {
+    public List<DailyReportData> parseCsvInputStream(@Nonnull final URL csvFileUrl) throws IOException
+    {
         Preconditions.checkNotNull(csvFileUrl, "CsvFileUrl must not be null!");
 
-        try (final InputStreamReader inputStreamReader = new InputStreamReader(csvFileUrl.openConnection().getInputStream());
-             final BufferedReader reader = new BufferedReader(inputStreamReader)) {
+        try (final InputStreamReader inputStreamReader = new InputStreamReader(csvFileUrl.openConnection().getInputStream()); final BufferedReader reader = new BufferedReader(inputStreamReader))
+        {
             final String header = reader.readLine();
-            if (StringUtils.isBlank(header)) {
-                throw new IllegalArgumentException("File must not be empty!");
+            if (StringUtils.isBlank(header))
+            {
+                throw new MalformedReportException("File must not be empty!");
             }
 
             final CsvHeader headerFields = parseHeader(header);
-            return reader.lines().map(line -> parseLine(line, headerFields))
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
+            return reader.lines().map(line -> parseLine(line, headerFields)).filter(Objects::nonNull).collect(Collectors.toList());
         }
     }
 
-    private DailyReportData parseLine(@Nonnull final String line, @Nonnull final CsvHeader header) {
+    private DailyReportData parseLine(@Nonnull final String line, @Nonnull final CsvHeader header)
+    {
         com.demo.adnetwork.util.StringUtils.checkNotBlank("line", "Line must not be empty!");
         Preconditions.checkNotNull(header, "Header must not be null!");
 
         final String[] values = Pattern.compile(COLUMN_SEPARATOR).split(line);
-        if (header.getCsvFields().size() != values.length) {
-            throw new IllegalArgumentException("Header and value differ in length!");
+        if (header.getCsvFields().size() != values.length)
+        {
+            throw new MalformedReportException("Header and value differ in length!");
         }
 
-        if (!dailyReportRowValidatorStrategy.isRowValid(values)) {
+        if (!dailyReportLineIntegrityValidatorStrategy.isValid(values))
+        {
             LOG.error("Line is malformed. Skipping it (" + Arrays.toString(values) + ")!");
             return null;
         }
 
         final Function<String, String> value = csvHeaderField ->
-                values[header.getCsvFields().indexOf(csvHeaderField)];
+        {
 
-        final String revenueHeader = header.getCsvFields().stream()
-                .filter(headerString -> headerString.toUpperCase().contains(CsvField.REVENUE.name().toUpperCase()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Revenue header not found!"));
+            final int i = header.getCsvFields().indexOf(csvHeaderField);
+            if (i == -1)
+            {
+                throw new MalformedReportException("Report csv header not found (" + csvHeaderField + ")!");
+            }
+            return values[i];
+
+        };
+
+        final String revenueHeader = header.getCsvFields().stream().filter(headerString -> headerString.toUpperCase().contains(CsvField.REVENUE.name().toUpperCase())).findFirst().orElseThrow(() -> new IllegalArgumentException("Revenue header not found!"));
         final RevenueValueParser.RevenueValue revenueValue = RevenueValueParser.parse(value.apply(revenueHeader), revenueHeader);
 
-        return new DailyReportData(LocalDate.parse(value.apply(CsvField.DATE.name()), DateTimeFormatter.ofPattern("d/M/yyyy")),
-                value.apply(CsvField.APP.name()),
-                value.apply(CsvField.PLATFORM.name()),
-                value.apply(CsvField.REQUESTS.name()),
-                value.apply(CsvField.IMPRESSIONS.name()),
-                revenueValue.getRevenue(),
-                revenueValue.getCurrency());
+        return new DailyReportData(LocalDate.parse(value.apply(CsvField.DATE.name()), DateTimeFormatter.ofPattern("d/M/yyyy")), value.apply(CsvField.APP.name()), value.apply(CsvField.PLATFORM.name()), value.apply(CsvField.REQUESTS.name()), value.apply(CsvField.IMPRESSIONS.name()), revenueValue.getRevenue(), revenueValue.getCurrency());
     }
 
-    private CsvHeader parseHeader(@Nonnull final String header) {
+    private CsvHeader parseHeader(@Nonnull final String header)
+    {
         Assert.hasText(header, "Header must not be empty!");
 
-        return new CsvHeader(Pattern.compile(COLUMN_SEPARATOR).splitAsStream(header)
-                .map(String::toUpperCase)
-                .collect(Collectors.toList()));
+        CsvHeader csvHeader = new CsvHeader(Pattern.compile(COLUMN_SEPARATOR).splitAsStream(header).map(String::toUpperCase).collect(Collectors.toList()));
+
+        if (csvHeader.getCsvFields().size() != 6)
+        {
+            throw new MalformedReportException("Report csv must consist of 6 columns!");
+        }
+
+        return csvHeader;
     }
 }
