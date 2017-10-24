@@ -1,0 +1,33 @@
+Problem 2;
+The problem is with adumbrella reports.
+Last line of the report is a footer with summed data that should not be saved to daily_report table.
+AdNetwork application uses a strategy that all values in one .csv line are mandatory and if one or more are empty,
+than that line is rejected and logged as erroneous (of course better strategies can be implemented).
+
+
+Problem 3:
+1) Current design saves input parameters for each imported adNetwork report in an entity DailyReportImportLog.
+Application does not allow you to import the same report multiple times if it finds exact same parameters within DailyReportImportLog.
+Some simple validations of csv report is implemented, but data of collected reports from tens of different adNetworks would probably
+show weaknesses that should be addressed.
+
+A simple job would be used to import daily report from all adNetwork. For automating jobs like that Jenkins could be used.
+I would design a system to validate report content and form against known issues and reject them if not compliant.
+Then I would make an app where a task list would show rejected reports that need intervening.
+To deal with technical/infrastructural problems where reports are unavailable due hardware problems etc. automatic retries would be implemented.
+
+2) Headers and value columns could be turned. For example name of the App could be found in the Revenue column and vice versa.
+Data from csv should be converted from string to concrete types before persisting, to minimize the risk of mistaken identity.
+Reports being imported could be checked against data already present in daily_report table. That analysis could show abnormal increase or decrease
+of certain parameters and if it would go over a certain borderline report could be rejected.
+
+3) This selections relies solely on descriptions of google products, because I don't have experience with GCP.
+For persisting of daily_reports I would use one of the available Cloud Storages (SQL, NoSQL, current entity model is not complicated
+ so any kind would be suitable for now).
+For defining apis I would use Apigee api platform. That would take care of security, api analytics, protocol transformations, traffic management...
+Cloud machine learning engine would probably be very useful for finding deviations and discrepancies and reduce the amount of bad data.
+For data visualization I would use Cloud Datalab.
+
+
+
+
