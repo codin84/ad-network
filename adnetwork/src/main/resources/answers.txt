@@ -23,9 +23,9 @@ of certain parameters and if it would go over a certain borderline report could 
 
 3) This selections relies solely on descriptions of google products, because I don't have experience with GCP.
 For persisting of daily_reports I would use one of the available Cloud Storages (SQL, NoSQL, current entity model is not complicated
- so any kind would be suitable for now).
+so any kind would be suitable for now).
 For defining apis I would use Apigee api platform. That would take care of security, api analytics, protocol transformations, traffic management...
-Cloud machine learning engine would probably be very useful for finding deviations and discrepancies and reduce the amount of bad data.
+Cloud machine learning engine would probably be very useful for finding deviations and discrepancies and reduce the amount of bad reports.
 For data visualization I would use Cloud Datalab.
 
 
